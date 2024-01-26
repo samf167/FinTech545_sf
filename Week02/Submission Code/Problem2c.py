@@ -12,7 +12,8 @@ import math
 import matplotlib.pyplot as plt
 
 # Read in data from filepath
-data = np.genfromtxt("/Users/samfuller/Desktop/545/FinTech545_sf/Week02/problem2_x.csv", delimiter=',') 
+filepath = "/Users/samfuller/Desktop/545/FinTech545_sf/Week02/problem2_x.csv"
+data = np.genfromtxt(filepath, delimiter=',') 
 
 # Chop first row of data off
 data = data[1:]

@@ -6,7 +6,9 @@ from scipy import stats
 from scipy.integrate import quad
 
 # Read in data
-data = pd.read_csv("/Users/samfuller/Desktop/545/FinTech545_sf/Week02/problem1.csv")
+filepath = "/Users/samfuller/Desktop/545/FinTech545_sf/Week02/problem1.csv"
+#filepath = 
+data = pd.read_csv(filepath)
 x = data[["x"]].values 
 moment = 0
 mean = 0

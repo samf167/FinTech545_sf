@@ -10,7 +10,8 @@ import math
 import matplotlib.pyplot as plt
 
 # Read in data
-data = pd.read_csv("/Users/samfuller/Desktop/545/FinTech545_sf/Week02/problem2.csv")
+filepath = "/Users/samfuller/Desktop/545/FinTech545_sf/Week02/problem2.csv"
+data = pd.read_csv(filepath)
 x = data["x"].values 
 plt_x = x # initialize for plot later on
 y = data["y"].values

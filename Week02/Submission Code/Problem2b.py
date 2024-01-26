@@ -10,7 +10,8 @@ import math
 import matplotlib.pyplot as plt
 
 # read in data
-data = pd.read_csv("/Users/samfuller/Desktop/545/FinTech545_sf/Week02/problem2.csv")
+filepath = "/Users/samfuller/Desktop/545/FinTech545_sf/Week02/problem2.csv"
+data = pd.read_csv(filepath)
 x = data["x"].values
 # save x without constant for plots later
 plt_x = x

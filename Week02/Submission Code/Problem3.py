@@ -11,7 +11,8 @@ import seaborn
 import math
 import matplotlib.pyplot as plt
 
-data = pd.read_csv("/Users/samfuller/Desktop/545/FinTech545_sf/Week02/problem3.csv")
+filepath = "/Users/samfuller/Desktop/545/FinTech545_sf/Week02/problem3.csv"
+data = pd.read_csv(filepath)
 
 # Initialize arrays to store AIC and BIC values
 AIC = []
