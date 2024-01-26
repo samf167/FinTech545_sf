@@ -38,5 +38,5 @@ print("Package Data:")
 
 # Statistical package
 for i in range(1,5):
-    moment = stats.moment(data, moment = i, axis = 0)
+    moment = stats.moment(data, moment = i)
     print("moment", i, "=", moment)
