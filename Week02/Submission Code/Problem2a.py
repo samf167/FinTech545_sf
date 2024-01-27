@@ -16,22 +16,21 @@ x = data["x"].values
 plt_x = x # initialize for plot later on
 y = data["y"].values
 
-x = sm.add_constant(x)
+#x = sm.add_constant(x)
 
 # Complete regression and save optimal parameters
 model = sm.OLS(y, x).fit()
 parameters = model.params
-intercept = parameters[0]
-slope = parameters[1]
+#intercept = parameters[0]
+slope = parameters[0]
 residual = model.resid
 print(np.std(residual))
-
 
 # Get OLS expected y values for plotting
 y_ols = slope*x
 
 print(model.summary())
-beta = 0.77
+beta = 0.70
 
 # Formulate log likelihood using formula from notes
 def ll(inputs):
@@ -47,7 +46,6 @@ def ll(inputs):
         ttl = ttl + error_zero
     stdev = std
     ll = -(len(x)/2)*(np.log((stdev**2*2*math.pi))) - ((1/(2*(stdev**2)))*ttl)
-    ll = ll[1]
     return -ll
 
 # Minimize the log likelihood
@@ -56,6 +54,8 @@ mle = minimize(ll, x0 = inputs, method = "L-BFGS-B")
 beta_hat = mle.x[1:]
 y_mle = beta_hat*plt_x
 y_ols = slope*plt_x
+
+print(mle)
 
 # Plot original data and OLS/MLE line of best fit
 '''plt.clf()

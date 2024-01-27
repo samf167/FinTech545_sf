@@ -13,24 +13,11 @@ import matplotlib.pyplot as plt
 filepath = "/Users/samfuller/Desktop/545/FinTech545_sf/Week02/problem2.csv"
 data = pd.read_csv(filepath)
 x = data["x"].values
-# save x without constant for plots later
 plt_x = x
 y = data["y"].values
 
-x = sm.add_constant(x)
-'''
-# compute regression and save parameters
-model = sm.OLS(y, x).fit()
-parameters = model.params
-intercept = parameters[0]
-slope = parameters[1]
-residual = model.resid
-'''
-
-#print(model.summary())
-
 # define a beta for our MLE intial point
-beta = 0.77
+beta = 0.70
 
 # Function computes MLE based on T distribution of errors
 def ll(inputs):
@@ -47,9 +34,8 @@ def ll(inputs):
         sum_arg = np.log(k+error_zero)
         ttl = ttl + sum_arg
 
-    ll = -ttl
-    ll = ll[1]
-    return -ll
+    ll = -ttl # save ll as log-likelihood
+    return -ll # return neg log-likelihood
 
 # Minimize the log likelihood and print the outputted parameters
 inputs = [1, beta]

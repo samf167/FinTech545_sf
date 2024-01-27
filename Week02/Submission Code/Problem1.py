@@ -21,20 +21,25 @@ for i in range(1,5):
     n = len(x)
     for value in range(len(x)):
         if i == 1:
-            formula = ((x[value]-0))*((n-1)**-1)
+            formula = ((x[value]-0))
         if i == 2:
-            formula = ((x[value]-mean)**i)*((n-1)**-1)
+            formula = ((x[value]-mean)**i)
         if i == 3:
-            formula = ((x[value]-mean)**i)*(n/((n-1)*(n-2)))*(1/(sd**3))
+            formula = ((x[value]-mean)**i)
         if i == 4:
-            formula = (((x[value]-mean)/sd)**i)*(n**-1)
+            formula = (((x[value]-mean))**i)
         moment = moment + formula
-        
-    print("moment", i, "=", moment)
     if i == 1:
-        mean = moment
+        mean = moment*((n-1)**-1)
+        moment = mean
     if i == 2:
+        moment = moment*((n-1)**-1)
         sd = moment**(0.5)
+    if i == 3:
+        moment = moment*(n/((n-1)*(n-2)))*(1/(sd**3))
+    if i == 4:
+        moment = moment*((n*sd**4)**-1)
+    print("moment", i, "=", moment)
 
 print("Package Data:")
 
