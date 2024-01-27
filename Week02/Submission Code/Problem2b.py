@@ -64,5 +64,4 @@ plt.show()
 corr_matrix = np.corrcoef(y, y_mle_t)
 corr = corr_matrix[0,1]
 R_sq = corr**2
-
 print(R_sq)
