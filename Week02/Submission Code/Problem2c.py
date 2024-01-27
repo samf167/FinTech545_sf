@@ -30,6 +30,7 @@ def negative_log_likelihood(params, X):
     p = X.shape[1]  # dimensionality of data points
     mu = params[:p]  # mean vector
     Sigma = params[p:].reshape((p, p))  # covariance matrix
+    Sigma = np.dot(Sigma, Sigma.T)
     m = X.shape[0]  # number of data points
     log_det_Sigma = np.log(np.linalg.det(Sigma)) # calculate log determinant of covariance matrix
     inv_Sigma = np.linalg.inv(Sigma) # calculate inverse of covariance matrix
@@ -51,6 +52,7 @@ initial_params = np.hstack([initial_mu, initial_Sigma.ravel()])  # flatten the p
 # Perform minimization
 result = minimize(negative_log_likelihood, initial_params, args=(data,), method='L-BFGS-B')
 # Save results
+print(result)
 fitted_params = result.x
 fitted_mu = fitted_params[:data.shape[1]]
 fitted_Sigma = fitted_params[data.shape[1]:].reshape((data.shape[1], data.shape[1]))

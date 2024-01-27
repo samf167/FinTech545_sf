@@ -18,15 +18,16 @@ plt_x = x
 y = data["y"].values
 
 x = sm.add_constant(x)
-
+'''
 # compute regression and save parameters
 model = sm.OLS(y, x).fit()
 parameters = model.params
 intercept = parameters[0]
 slope = parameters[1]
 residual = model.resid
+'''
 
-print(model.summary())
+#print(model.summary())
 
 # define a beta for our MLE intial point
 beta = 0.77

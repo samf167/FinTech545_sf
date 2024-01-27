@@ -40,5 +40,10 @@ print("Package Data:")
 
 # Statistical package
 for i in range(1,5):
-    moment = stats.moment(data, moment = i)
+    if i == 1:
+        moment = stats.moment(data, moment = i, center = 0)
+        mean = moment
+    else:
+        moment = stats.moment(data, moment = i, center = mean)
+    
     print("moment", i, "=", moment)

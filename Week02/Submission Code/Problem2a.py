@@ -24,6 +24,8 @@ parameters = model.params
 intercept = parameters[0]
 slope = parameters[1]
 residual = model.resid
+print(np.std(residual))
+
 
 # Get OLS expected y values for plotting
 y_ols = slope*x
@@ -56,14 +58,27 @@ y_mle = beta_hat*plt_x
 y_ols = slope*plt_x
 
 # Plot original data and OLS/MLE line of best fit
-plt.clf()
+'''plt.clf()
 plt.figure(figsize=(10, 6))
 plt.plot(plt_x, y, 'o', label='Given data')
-plt.plot(plt_x, y_mle, '-', label='MLE Fit line')
+#plt.plot(plt_x, y_mle, '-', label='MLE Fit line')
 plt.plot(plt_x, y_ols, '-', label='OLS Fit line')
 plt.xlabel('x')
 plt.ylabel('y')
 plt.legend()
-plt.title('MLE vs. OLS Fit through Data')
+plt.title('OLS Fit through Data')
+plt.grid(True)
+plt.show()'''
+
+
+plt.clf
+plt.figure(figsize=(10, 6))
+plt.plot(plt_x, y, 'o', label='Given data')
+plt.plot(plt_x, y_mle, '-', label='MLE Fit line')
+#plt.plot(plt_x, y_ols, '-', label='OLS Fit line')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.title('MLE vs. Fit through Data')
 plt.grid(True)
 plt.show()
