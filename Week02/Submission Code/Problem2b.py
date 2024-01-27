@@ -60,9 +60,9 @@ plt.title('MLE T-dist through Data')
 plt.grid(True)
 plt.show()
 
-# calculate rsq of the MLE T dist model
+'''
+# calculate rsq of the MLE T dist model # commented for runtime
 corr_matrix = np.corrcoef(y, y_mle_t)
-print(corr_matrix)
 corr = corr_matrix[0,1]
 R_sq = corr**2
-print(R_sq)
+print(R_sq)'''
