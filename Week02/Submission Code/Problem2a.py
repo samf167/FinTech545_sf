@@ -16,12 +16,9 @@ x = data["x"].values
 plt_x = x # initialize for plot later on
 y = data["y"].values
 
-#x = sm.add_constant(x)
-
-# Complete regression and save optimal parameters
+# Complete regression and save optimal parameters for y = bx
 model = sm.OLS(y, x).fit()
 parameters = model.params
-#intercept = parameters[0]
 slope = parameters[0]
 residual = model.resid
 print(np.std(residual))
