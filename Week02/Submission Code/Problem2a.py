@@ -26,8 +26,8 @@ print(np.std(residual))
 # Get OLS expected y values for plotting
 y_ols = slope*x
 
-print(model.summary())
-beta = 0.70
+print(model.summary()) # print OLS summary
+beta = 0.70 # initialize guess beta
 
 # Formulate log likelihood using formula from notes
 def ll(inputs):
@@ -54,7 +54,7 @@ y_ols = slope*plt_x
 
 print(mle)
 
-# Plot original data and OLS/MLE line of best fit
+# Plot original data and OLS line of best fit
 '''plt.clf()
 plt.figure(figsize=(10, 6))
 plt.plot(plt_x, y, 'o', label='Given data')
@@ -67,7 +67,7 @@ plt.title('OLS Fit through Data')
 plt.grid(True)
 plt.show()'''
 
-
+# Plot original data and MLE line of best fit
 plt.clf
 plt.figure(figsize=(10, 6))
 plt.plot(plt_x, y, 'o', label='Given data')
