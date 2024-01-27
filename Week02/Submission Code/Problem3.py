@@ -22,14 +22,15 @@ for i in range(1,4):
     # Compute AR(1)-AR(3) using sm library, print results and add to AIC/BIC arrays
     ar_i = sm.tsa.SARIMAX(data, order = (i,0,0),seasonal_order = (0,0,0,0),trend='c')
     result_ari = ar_i.fit()
-    print("AR", i, result_ari.summary())
+    print("AR", i, result_ari.summary().as_latex())
+    print
     AIC.append(result_ari.aic)
     BIC.append(result_ari.bic)
 
     # Compute MA(1)-MA(3) using sm library, print results and add to AIC/BIC arrays
     mai = sm.tsa.SARIMAX(data, order = (0,0,i),seasonal_order = (0,0,0,0),trend='c')
     result_mai = mai.fit()  
-    print("MA", i, result_mai.summary())
+    print("MA", i, result_mai.summary().as_latex())
     AIC.append(result_mai.aic)
     print(result_mai.aic)
     BIC.append(result_mai.bic)
