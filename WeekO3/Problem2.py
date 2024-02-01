@@ -1,4 +1,6 @@
 import numpy as np
+from numpy.linalg import norm
+import time
 
 def chol_psd(root, a):
     n = a.shape[0]
@@ -28,15 +30,6 @@ def chol_psd(root, a):
                 s = np.dot(root[i, :j], root[j, :j])
                 root[i, j] = (a[i, j] - s) * ir
 
-# Example usage:
-# a is your input positive semi-definite matrix
-# root will store the output of Cholesky decomposition
-a = np.array([[4, 12, -16], [12, 37, -43], [-16, -43, 98]], dtype=float)
-root = np.zeros_like(a)
-chol_psd(root, a)
-print(root)
-
-
 def near_psd(a, epsilon=0.0):
     n = a.shape[0]
     
@@ -63,15 +56,12 @@ def near_psd(a, epsilon=0.0):
 
     return out
 
-# Example usage:
-# a is your input covariance/correlation matrix
-a = np.array([[2, -1], [-1, 2]], dtype=float)
-psd_matrix = near_psd(a, epsilon=1e-8)
-print(psd_matrix)
 
 # PD matrix is if x^TAx geq 0 when x =/= 0 (exists nontrivial case)
 # Eigen if (A - lambda(I))v = 0, Av = lambda(v)
 # PSD is if x^TAx > 0 when x =/= 0 
+
+# Higham
 
 def _getAplus(A):
     eigval, eigvec = np.linalg.eigh(A)
@@ -80,8 +70,8 @@ def _getAplus(A):
     return Q * xdiag * Q.T
 
 def _getPs(A, W=None):
-    W05 = np.sqrt(W) if W is not None else 1
-    return W05 * np.linalg.inv(W05 * A * W05) * W05
+    W05 = np.sqrt(W) if W is not None else np.eye(A.shape[0])
+    return np.linalg.inv(W05 @ A @ W05)
 
 def _getPu(A, W=None):
     Aret = np.array(A.copy())
@@ -89,13 +79,6 @@ def _getPu(A, W=None):
     return np.matrix(Aret)
 
 def higham_nearest_psd(A, epsilon=0, max_iterations=100):
-    """Find the nearest positive semi-definite matrix to input
-    A Python/Numpy port of John D'Errico's `nearestSPD` MATLAB code [1], which
-    credits [2].
-    [1] https://www.mathworks.com/matlabcentral/fileexchange/42885-nearestspd
-    [2] N.J. Higham, "Computing a nearest symmetric positive semidefinite
-    matrix", Linear Algebra Appl., 103, 103-118, 1988.
-    """
     n = A.shape[0]
     W = np.identity(n) 
     # Force A to be symmetric
@@ -121,13 +104,6 @@ def higham_nearest_psd(A, epsilon=0, max_iterations=100):
     
     return Yk
 
-# Example usage:
-# a is your input covariance/correlation matrix that is not PSD
-a = np.array([[1, -0.1, 0.5], [-0.1, 1, -0.3], [0.5, -0.3, 1]])
-psd_matrix = higham_nearest_psd(a)
-print(psd_matrix)
-
-
 # Generate non-psd correlation matrix that is 500x500
 n = 500
 
@@ -142,13 +118,20 @@ sigma[0, 1] = 0.7357
 sigma[1, 0] = 0.7357
 
 # sigma is now a non-PSD correlation matrix
-print(sigma)
+print("SIGMA",sigma)
 
+start_time = time.time()
 higams = higham_nearest_psd(sigma, epsilon=0, max_iterations=100)
+higham_time = time.time() - start_time
+
 near_fixed = near_psd(sigma, epsilon=0.0)
 
 print(higams)
 print(near_fixed)
 
-# Compare using frombiaus norm TODO
+# Prove correctness
+
+# Compare using frombiaus norm 
+highams_norm = norm(higams - sigma, 'fro')
+near_norm = norm(near_fixed - sigma, 'fro')
 
