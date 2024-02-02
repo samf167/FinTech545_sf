@@ -140,7 +140,10 @@ for i in matrix_list:
     samples_50, time_50 = pca_simulation(i, 0.50, num_draws)
     covariance_50 = np.cov(samples_50, rowvar=False)
     frobenius_norm_50 = norm(covariance_50 - i, 'fro')
-
+    print("Direct Covariance Matrix:", direct_covariance)
+    print("100% PCA Covariance Matrix:",covariance_100)
+    print("75% PCA Covariance Matrix:",covariance_75)
+    print("50% PCA Covariance Matrix:", covariance_50)
     print(f"Direct Simulation: Frobenius Norm = {direct_frobenius_norm}, Time = {direct_time}")
     print(f"PCA 100%: Frobenius Norm = {frobenius_norm_100}, Time = {time_100}")
     print(f"PCA 75%: Frobenius Norm = {frobenius_norm_75}, Time = {time_75}")

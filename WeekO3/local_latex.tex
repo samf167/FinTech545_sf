@@ -1,0 +1,537 @@
+\documentclass[10pt]{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{left=1in, right=1in, top=1in, bottom=1in}
+\usepackage{afterpage}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\graphicspath{ {./images/} }
+\usepackage{booktabs} % For formal tables
+\usepackage{amsmath} % For math formatting
+\usepackage{siunitx} % For alignment
+\usepackage{float}
+\usepackage{matlab-prettifier}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyhead[R]{Sam Fuller, CEE201, HW3, Feb 2} % The text you want in the header
+\fancyfoot[C]{\thepage} % If you want to keep the page number centered in the footer
+\fancypagestyle{plain}{
+  \fancyhf{} % clear all header and footer fields
+  \fancyhead[R]{Sam Fuller, CEE201, HW3, Feb 2} % Same header for the first page
+  \fancyfoot[C]{\thepage} % Page number in the footer
+}
+
+\title{CEE201 HW3}
+\author{Samuel Fuller}
+\date{January 2024}
+
+\begin{document}
+
+\maketitle
+
+\section{Problem 1}
+
+“Guidelines of ethical behavior among engineers are needed
+because it is easy for engineers to take advantage of clients.”
+
+\section{Problem 2}
+\subsection{a}
+Given the quadratic cost function
+\[ f(x_1, x_2, x_3) = 40x_1^2 + 16x_2^2 + 103x_3^2 - 22x_1x_2 - 52x_1x_3 - 23x_2x_3 + 60x_1 - 111x_2 - 340x_3 + 268 \]
+the partial derivatives with respect to \( x_1 \), \( x_2 \), and \( x_3 \) are:
+\begin{align*}
+\frac{\partial f}{\partial x_1} &= 80x_1 -22x_2 - 52x_3 + 60, \\
+\frac{\partial f}{\partial x_2} &= -22x_1 + 32x_2 - 23x_3 - 111, \\
+\frac{\partial f}{\partial x_3} &= -52x_1 - 23x_2 + 206x_3 - 340.
+\end{align*}
+
+\subsection{b}
+The numerical values for the Hessian matrix \( H \) and the vector \( c \) corresponding to the cost function \( f(x) \) are:
+\[
+H = \begin{bmatrix}
+80 & -22 & -52 \\
+-22 & 32 & -23 \\
+-52 & -23 & 206
+\end{bmatrix}
+\]
+\[
+C = \begin{bmatrix}
+60  \\
+-111  \\
+-52 
+\end{bmatrix}
+\]
+
+\subsection{c}
+The matrix \( H \) is indeed symmetric ($H_{i,j} = H_{j,i}$), as the second derivative with respect to $x_i,x_j$ is the same as the second derivative with respect to $x_j,x_i$.
+
+\subsection{d}
+The gradient of \( f \) is:
+\[
+\begin{bmatrix}
+80x_1 - 22x_2 - 52x_3 + 60 \\
+-22x_1 + 32x_2 - 23x_3 - 111 \\
+-52x_1 - 23x_2 + 206x_3 - 340
+\end{bmatrix}
+\]
+
+The Hessian matrix \( H \) is:
+\[
+\begin{bmatrix}
+80 & -22 & -52 \\
+-22 & 32 & -23 \\
+-52 & -23 & 206
+\end{bmatrix}
+\]
+
+The vector \( c \) is:
+\[
+\begin{bmatrix}
+60 \\
+-111 \\
+-340
+\end{bmatrix}
+\]
+
+\[
+Hx + c =  
+\begin{bmatrix}
+80 & -22 & -52 \\
+-22 & 32 & -23 \\
+-52 & -23 & 206
+\end{bmatrix}
+\begin{bmatrix}
+x_1 \\
+x_2 \\
+x_3
+\end{bmatrix}
++
+\begin{bmatrix}
+60 \\
+-111 \\
+-340
+\end{bmatrix}
+= \nabla f \ =
+\begin{bmatrix}
+80x_1 - 22x_2 - 52x_3 + 60 \\
+-22x_1 + 32x_2 - 23x_3 - 111 \\
+-52x_1 - 23x_2 + 206x_3 - 340
+\end{bmatrix}
+\]
+
+We know this to be true given our calculations from part a.
+
+\subsection{e}
+\[
+\begin{bmatrix}
+x_1^* \\
+x_2^*\\
+x_3^*
+\end{bmatrix} =
+\begin{bmatrix}
+  -4.10 \\
+  -8.94\\
+  -3.68
+\end{bmatrix}
+\]
+
+\[
+f(x^*) = 3265.43
+\]
+
+Computed using the following code:
+\lstinputlisting[frame=single,
+numbers=left,
+style=Matlab-Pyglike]{twoe.m}
+
+\subsection{f}
+\[
+A = 
+\begin{bmatrix}
+6 & -4 & 2 \\
+-7 & 5 & -3\\
+\end{bmatrix}
+\]
+\[
+b = 
+\begin{bmatrix}
+  8 \\
+  -9
+\end{bmatrix}
+\]
+
+Given no terms in $g_1$ and $g_2$ feature $x_i$ raised to a power greater than 1, $Ax$ implies that $A_{ij} = \frac{\partial g_i}{\partial x_j}.$ for example, $A_{1,1} = 6 = \frac{\partial g_1}{\partial x_1}$, the same holds true for all $A_{i,j}$
+
+\subsection{g}
+
+Using $f_A$ and the first optimality condition where $x = x^*, \lambda = \lambda^*$:
+\[
+\frac{\partial f_A}{\partial x} = x^*T H + c^T + \lamdbda^*T A = 0^T
+\text{Taking the transpose implies:}
+Hx^* + A^T \lambda^* = -c
+
+\begin{bmatrix}
+    H & A^T
+    \end{bmatrix}
+    \begin{bmatrix}
+    x^* \\
+    \lambda^*
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+    -c
+\end{bmatrix}
+\]
+
+Using $f_A$ and the second optimality condition $x = x^*, \lambda = \lambda^*$:
+\[
+\frac{\partial f_A}{\partial \lambda} = x^*T A^T - b^T = 0^T
+\text{Taking the transpose implies:}
+Ax^* = b
+
+\begin{bmatrix}
+    A & 0    
+    \end{bmatrix}
+    \begin{bmatrix}
+    x^* \\
+    \lambda^*
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+    b
+\end{bmatrix}
+
+\]
+
+Above we have shown that the necessary conditions for optimality are expressed in the KKT matrix equation:
+
+\[
+\begin{bmatrix}
+H & A^T \\
+A & 0
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+\lambda
+\end{bmatrix}
+=
+\begin{bmatrix}
+-c \\
+b
+\end{bmatrix}
+\]
+
+
+
+
+\subsection{h}
+
+\lstinputlisting[
+frame=single,
+numbers=left,
+style=Matlab-Pyglike]{twoh.m
+}
+Using the matlab code above to solve the system of five equations and five unknowns as well as calculating $Ax - b$ which returns the zero vector \textbf{for all inputs in this part as well as part i and j}, we are left with the following numbers: \\
+
+Where $Ax^*-b = 0:$
+\[
+\begin{bmatrix}
+x_1^* \\
+x_2^*\\
+x_3^* \\
+\lambda_1^* \\
+\lambda_2^2
+\end{bmatrix} =
+\begin{bmatrix}
+  5.96 \\
+  8.92\\
+  3.96 \\
+  -169.48 \\
+  -126.04 \\
+\end{bmatrix}
+\]
+
+\[
+f(x^*) = -611.1
+\] 
+
+In this case and all the following cases, both Lagrange multipliers are $<0$ which makes sense given the equality constraints.
+
+\subsection{i}
+Where $Ax^*-b = 0:$ and:
+\[
+b = 
+\begin{bmatrix}
+  8 \\
+  -8
+\end{bmatrix}
+\]
+
+\[
+\begin{bmatrix}
+x_1^* \\
+x_2^*\\
+x_3^* \\
+\lambda_1^* \\
+\lambda_2^2
+\end{bmatrix} =
+\begin{bmatrix}
+  7.77 \\
+  3.77 \\
+  3.96 \\
+  -581.38 \\
+  -465.23 \\
+\end{bmatrix}
+\]
+\[
+f(x^*) = -315.46
+\] 
+
+\[
+f(x^*)_h - f(x^*)_i = -295.64 \approx \frac{\lambda_2(i)^* - \lambda_2(h)^*}{2} = -295.364
+\] 
+
+
+
+\subsection{j}
+Where $Ax^*-b = 0:$ and:
+Changing:
+\[
+b = 
+\begin{bmatrix}
+  9 \\
+  -9
+\end{bmatrix}
+\]
+
+\[
+\begin{bmatrix}
+x_1^* \\
+x_2^*\\
+x_3^* \\
+\lambda_1^* \\
+\lambda_2^2
+\end{bmatrix} =
+\begin{bmatrix}
+  8.26 \\
+  12.02 \\
+  3.76 \\
+  -671.08 \\
+  -537.94 \\
+\end{bmatrix}
+\]
+\[
+f(x^*) = -190.82
+\] 
+
+\[
+f(x^*)_h - f(x^*)_i = -420.28 \approx \frac{\lambda_2(i)^* - \lambda_2(h)^*}{2} = -420.28
+\] 
+
+
+\subsection{k}
+Yes.
+
+\newpage
+\section{Problem 3}
+\subsection{a}
+
+\subsection{b}
+Code runs without error. Here is the default output:
+\begin{figure}[H]
+\centering
+\includegraphics[width = 150mm]{3b.png}
+\caption{Generated by constrained\_least\_squares program}
+\label{fig:method}
+\end{figure}
+
+\subsection{c}
+\lstinputlisting[frame=single,
+numbers=left,
+style=Matlab-Pyglike]{cls.m}
+
+
+\subsection{d}
+\begin{figure}[H]
+\centering
+\includegraphics[width = 150mm]{3d.png}
+\caption{Generated by constrained\_least\_squares program}
+\label{fig:method}
+\end{figure}
+
+\begin{lstlisting}[
+frame=single,
+numbers=left,
+style=Matlab-Pyglike]
+    true   unconstrained  constrained
+    1.00      -18.73        -13.39
+   -6.00       17.84         10.37
+    5.00        3.05          3.02
+   -4.00       -4.65         -4.94
+    3.00       19.49         14.89
+\end{lstlisting}   
+
+\subsection{e}
+\begin{lstlisting}[
+frame=single,
+numbers=left,
+style=Matlab-Pyglike]
+    true   unconstrained  constrained
+    1.00      -33.58        -25.74
+   -6.00       28.06         17.28
+    5.00        8.50          8.46
+   -4.00       -3.79         -4.99
+    3.00       36.14         29.32
+
+    true   unconstrained  constrained
+    1.00       -5.97         -2.27
+   -6.00        0.53         -4.81
+    5.00        7.11          7.08
+   -4.00       -5.52         -4.97
+    3.00       10.98          7.87
+
+    true   unconstrained  constrained
+    1.00       8.74          -1.20
+   -6.00     -16.46          -2.22
+    5.00       3.35           3.42
+   -4.00      -4.04          -4.94
+    3.00      -3.76           4.67
+\end{lstlisting}   
+Comparing the various $a_i$ coefficients for the unconstrained and constrained fits by standard deviation across the 3 trials run:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccc}
+\toprule
+True Value & Unconstrained SD & Constrained SD \\
+\midrule
+1          & 17.54            & 11.32          \\
+-6         & 18.34            & 9.86           \\
+5          & 2.18             & 2.13           \\
+-4         & 0.76             & 0.02           \\
+3          & 16.47            & 10.94          \\
+\bottomrule
+\end{tabular}
+\caption{Standard deviations of model outputs relative to true values.}
+\end{table}
+
+Evidently, $a_2$ is the most variable coefficient in the unconstrained case whereas $a_1$ is narrowly the most variable coefficient in the constrained case. In both the unconstrained and constrained fit, $a_1, a_2, and a_5$ are all similarly much more variable than $a_3 \text{and} a_4$
+
+
+\newpage
+\section{Problem 4}
+\subsection{a}
+\[
+\Pi = \frac{1}{2}k((x_1 - x_2)^2 + (y_1 - y_2)^2) + m_1gy_1 + m_2gy_2
+\]
+
+\subsection{b}
+\[
+\Pi_A = \frac{1}{2}k((x_1 - x_2)^2 + (y_1 - y_2)^2) + m_1gy_1 + m_2gy_2 + \lambda_1(a_1x_1 - y_1) + \lambda_2(a_2x_2 - y_2)
+\]
+
+\subsection{c}
+The KKT conditions are given by setting the gradient of \( \Pi_A \) with respect to the coordinates and the Lagrange multipliers to zero:
+\begin{align*}
+\frac{\partial \Pi_A}{\partial x_1} &= a_1\lambda_1 + k(x_1 - x_2) = 0, \\
+\frac{\partial \Pi_A}{\partial y_1} &= g m_1 - \lambda_1 + k(y_1 - y_2) = 0, \\
+\frac{\partial \Pi_A}{\partial x_2} &= a_2\lambda_2 - k(x_1 - x_2) = 0, \\
+\frac{\partial \Pi_A}{\partial y_2} &= g m_2 - \lambda_2 - k(y_1 - y_2) = 0, \\
+\frac{\partial \Pi_A}{\partial \lambda_1} &= a_1x_1 - y_1 = 0, \\
+\frac{\partial \Pi_A}{\partial \lambda_2} &= a_2x_2 - y_2 = 0.
+\end{align*}
+
+\subsection{d}
+
+The Hessian matrix \( H \) of \( \Pi_A \) with respect to the variables \( x_1, y_1, x_2, y_2 \) is:
+\[
+H = \begin{bmatrix}
+k & 0 & -k & 0 \\
+0 & k & 0 & -k \\
+-k & 0 & k & 0 \\
+0 & -k & 0 & k
+\end{bmatrix}
+\]
+
+The matrix \( A \) representing the constraints \( y_1 \geq a_1x_1 \) and \( y_2 \geq a_2x_2 \) is:
+\[
+A = \begin{bmatrix}
+a_1 & -1 & 0 & 0 \\
+0 & 0 & a_2 & -1
+\end{bmatrix}
+\]
+
+And the gradient vector \( c \) of the potential energy function with respect to the variables \( x_1, y_1, x_2, y_2 \) is:
+\[
+c = \begin{bmatrix}
+0 \\
+m_1g \\
+0 \\
+m_2g
+\end{bmatrix}
+\]
+
+\[
+b= \begin{bmatrix}
+0\\
+0
+\end{bmatrix}
+\]
+
+The KKT matrix equation for the given optimization problem is:
+
+\[
+\begin{bmatrix}
+H & A^T \\
+A & 0
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+\lambda
+\end{bmatrix}
+=
+\begin{bmatrix}
+-c \\
+b
+\end{bmatrix}
+\]
+
+\subsection{e}
+
+Using the below code to solve for optimal values of x, y, and $\lambda$ given the various inputs from the problem statement, we yield
+\[
+x_1^* = 126.06, x_2^* = 96.96, y_1^* = 378.18, y_2^* = 386.51, \lambda_1^* = -196.20, \lambda_2^* = 147.15.
+\]
+
+\subsection{f}
+The spring force, $F = -k*d = -k * \sqrt{((x_1^* - x_2^*)^2 + (y_1^* - y_2^*)^2)} = -611.10N$
+
+\subsection{g}
+Using the code to calculate the constraints, we get that $ a_1x_1^* -y_1^* = 0$ and $a_2x_2^* - y_2^* = 0$, thus both constraints are satisfied as well as binding as there is no resource (slack in the constraints) left to consume. $\lambda_1^* < 0, \lambda_2^* > 0$. The constraint forces are below:
+
+\[
+A^T \lambda = 
+\begin{bmatrix}
+  -588.60 \\
+   196.20 \\
+   588.60 \\
+  -147.15
+\end{bmatrix}
+\]
+  -588.60
+   196.20
+   588.60
+  -147.15
+
+The first force has slope equal to $\frac{1}{a_1}$ which means that it acts perpendicular to the $a_1$ ramp whereas this is not true for the second force which then does not act perpendicular.
+
+Code referenced in q4:
+\lstinputlisting[
+frame=single,
+numbers=left,
+style=Matlab-Pyglike]{foure.m}
+
+\end{document}

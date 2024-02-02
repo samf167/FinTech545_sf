@@ -64,48 +64,56 @@ def near_psd(a, epsilon=0.0):
 # Higham
 
 def _getAplus(A):
-    eigval, eigvec = np.linalg.eigh(A)
-    Q = np.matrix(eigvec)
-    xdiag = np.diag(np.maximum(eigval, 0))
-    return Q * xdiag * Q.T
+    eigvals, eigvecs = np.linalg.eigh(A)
+    eigvals = np.maximum(eigvals, 0)
+    return eigvecs @ np.diag(eigvals) @ eigvecs.T
 
 def _getPs(A, W=None):
-    W05 = np.sqrt(W) if W is not None else np.eye(A.shape[0])
-    return np.linalg.inv(W05 @ A @ W05)
+    if W is None:
+        W = np.eye(len(A))
+    W05 = np.sqrt(W)
+    iW = np.linalg.inv(W05)
+    return iW @ _getAplus(W05 @ A @ W05) @ iW
 
 def _getPu(A, W=None):
-    Aret = np.array(A.copy())
-    Aret[W > 0] = np.array(W)[W > 0]
-    return np.matrix(Aret)
+    Aret = A.copy()
+    np.fill_diagonal(Aret, 1)
+    return Aret
 
-def higham_nearest_psd(A, epsilon=0, max_iterations=100):
-    n = A.shape[0]
-    W = np.identity(n) 
-    # Force A to be symmetric
-    A = (A + A.T) / 2
-    deltaS = 0
-    Yk = A.copy()
+def wgtNorm(A, W=None):
+    if W is None:
+        W = np.eye(len(A))
+    W05 = np.sqrt(W)
+    W05 = W05 @ A @ W05
+    return np.sum(W05 * W05)
+
+def higham_nearest_psd(pc, W=None, epsilon=1e-9, max_iter=100, tol=1e-9):
+    n = pc.shape[0]
+    if W is None:
+        W = np.eye(n)
     
-    for k in range(max_iterations):
-        Rk = Yk - deltaS
-        Xk = _getAplus(Rk)
-        deltaS = Xk - Rk
-        Yk = _getPu(_getPs(Xk, W), W)
-        # Stop condition
-        normF = np.linalg.norm(Yk - A, 'fro')
-        if normF < epsilon:
+    delta_s = 0
+    Yk = pc.copy()
+    norml = np.finfo(np.float64).max
+    i = 1
+    
+    while i <= max_iter:
+        Rk = Yk - delta_s
+        Xk = _getPs(Rk, W)
+        delta_s = Xk - Rk
+        Yk = _getPu(Xk, W)
+        norm = wgtNorm(Yk - pc, W)
+        min_eig_val = np.min(np.real(np.linalg.eigvals(Yk)))
+        
+        if abs(norm - norml) < tol and min_eig_val > -epsilon:
             break
-            
-    # Make the result symmetric
-    Yk = (Yk + Yk.T) / 2
-    
-    # Ensure diagonals are 1
-    Yk[np.diag_indices_from(Yk)] = 1
-    
+        
+        norml = norm
+        i += 1
     return Yk
 
 # Generate non-psd correlation matrix that is 500x500
-n = 500
+n = 2000
 
 # Create an n x n matrix filled with 0.9
 sigma = np.full((n, n), 0.9)
@@ -118,20 +126,29 @@ sigma[0, 1] = 0.7357
 sigma[1, 0] = 0.7357
 
 # sigma is now a non-PSD correlation matrix
-print("SIGMA",sigma)
+#print("SIGMA",sigma)
 
 start_time = time.time()
-higams = higham_nearest_psd(sigma, epsilon=0, max_iterations=100)
+highams = higham_nearest_psd(sigma)
 higham_time = time.time() - start_time
 
+near_time = time.time()
 near_fixed = near_psd(sigma, epsilon=0.0)
+near_time = time.time() - start_time
 
-print(higams)
-print(near_fixed)
+highams_norm = norm(highams - sigma, 'fro')
+near_norm = norm(near_fixed - sigma, 'fro')
+
+print("Higham Output:", highams)
+print("Higham Time:", higham_time)
+print("Higham Norm:", highams_norm)
+
+print("Near Output:", near_fixed)
+print("Near Time:", near_time)
+print("Near Norm:", near_norm)
 
 # Prove correctness
 
 # Compare using frombiaus norm 
-highams_norm = norm(higams - sigma, 'fro')
-near_norm = norm(near_fixed - sigma, 'fro')
+
 
