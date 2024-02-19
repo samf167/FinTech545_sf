@@ -37,31 +37,21 @@ def return_calculate(prices, method="DISCRETE", date_column="date"):
 
     return returns_df
 
-# Example usage:
-# Assuming 'df' is a pandas DataFrame with price data and a 'date' column.
-# returns_df = return_calculate(df, method="DISCRETE", date_column="date")
-
 returns = (return_calculate(prices, method="DISCRETE", date_column = "Date"))
 copy_returns = returns
 
-column_mean = returns['META'].mean()
+#returns.to_csv('output.csv', index=False, encoding='utf-8-sig')
 
+column_mean = returns['META'].mean()
 meta_returns = returns[['Date', 'META']]
 meta_returns['META'] = returns['META'] - column_mean
 
 meta_px = prices['META'].tail(n=1).values
-#print(meta_px)
-
-# Given we hold 1 meta share we multiply today's share price by all the returns in meta_returns to give us the potentia
-#meta_returns['META_px'] = (1+meta_returns['META'])*meta_px
-#print(meta_returns)
-
 
 # Normal dsitribution estimation
 sdev = meta_returns['META'].std()
 alpha = 0.05
 z_score = norm.ppf(alpha)
-
 VaR_norm = -(z_score * sdev)*meta_px
 print("Normal VaR:", VaR_norm)
 
