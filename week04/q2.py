@@ -96,9 +96,16 @@ print("MLE T VaR:", VaR_mle_t)
 # AR(1) model
 
 # Historic Simulation
-sample_draws = meta_returns['META'].sample(n=100)
-sample_px = (sample_draws)*meta_px
-VaR_historic = -np.percentile(sample_px, 0.05)
+samples_list = []
+
+for i in range(100):
+    new_samples = meta_returns['META'].sample(n=100, replace=True) 
+    samples_list.append(new_samples)
+
+sample_draws = pd.concat(samples_list, ignore_index=True)
+sample_px = sample_draws*meta_px
+
+VaR_historic = -np.percentile(sample_px, 5)
 print("Historic VaR:", VaR_historic)
 
 
