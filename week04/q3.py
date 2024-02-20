@@ -6,7 +6,43 @@ import scipy
 filepath_1 = '/Users/samfuller/Desktop/545/FinTech545_sf-1/week04/DailyPrices.csv'
 filepath_2 = '/Users/samfuller/Desktop/545/FinTech545_sf-1/week04/portfolio.csv'
 prices = pd.read_csv(filepath_1)
-portfolios = pd.read_csv(filepath_1)
+portfolios = pd.read_csv(filepath_2)
+
+final_row_df = prices.iloc[[-1]].transpose()
+final_row_df.reset_index(level=0, inplace=True)
+#final_row_df.rename(columns={'index': 'Stock'}, inplace=True)  #
+
+portfolios = pd.merge(portfolios, final_row_df, left_on='Stock', right_on='index')
+
+def return_calculate(prices, method="DISCRETE", date_column="date"):
+    if date_column not in prices.columns:
+        raise ValueError(f"dateColumn: {date_column} not in DataFrame: {prices.columns}")
+
+    # Exclude the date column from the calculation
+    vars = prices.columns.difference([date_column])
+
+    # Extract the price data excluding the date column
+    p = prices[vars].values
+
+    # Calculate the simple returns or log returns
+    if method.upper() == "DISCRETE":
+        # Calculate simple returns
+        returns = p[1:] / p[:-1] - 1
+    elif method.upper() == "LOG":
+        # Calculate log returns
+        returns = np.log(p[1:] / p[:-1])
+    else:
+        raise ValueError(f"method: {method} must be in ('LOG', 'DISCRETE')")
+
+    # Add the date column to the returns DataFrame
+    returns_df = pd.DataFrame(data=returns, columns=vars)
+    returns_df[date_column] = prices[date_column].iloc[1:].values
+
+    # Reorder columns to have the date column at the beginning
+    cols = [date_column] + [col for col in returns_df.columns if col != date_column]
+    returns_df = returns_df[cols]
+
+    return returns_df
 
 def ewCovar(X, lam):
     X.set_index(X.columns[0], inplace=True)
@@ -30,4 +66,21 @@ def ewCovar(X, lam):
     
     return cov_matrix
 
-# 
+portfolio_A = portfolios[portfolios['Portfolio'] == 'A']
+portfolio_B = portfolios[portfolios['Portfolio'] == 'B']
+portfolio_C = portfolios[portfolios['Portfolio'] == 'C']
+
+#portfolio_A.to_csv('output.csv', index=False, encoding='utf-8-sig') # DEBUGGER
+
+returns = (return_calculate(prices, method="DISCRETE", date_column = "Date"))
+
+px_list = prices.tail(n=1).values
+port_value = 0
+
+port_list = [portfolio_A, portfolio_B, portfolio_C]
+
+for port in port_list:
+    for row in range(len(port['index'])):
+        port_value = port_value + port.iloc[row, 2]* port.iloc[row, 4]
+
+print(port_value)
