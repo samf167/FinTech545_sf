@@ -11,7 +11,6 @@ portfolios = pd.read_csv(filepath_2)
 final_row_df = prices.iloc[[-1]].transpose()
 final_row_df.reset_index(level=0, inplace=True)
 #final_row_df.rename(columns={'index': 'Stock'}, inplace=True)  #
-
 portfolios = pd.merge(portfolios, final_row_df, left_on='Stock', right_on='index')
 
 def return_calculate(prices, method="DISCRETE", date_column="date"):
@@ -72,15 +71,44 @@ portfolio_C = portfolios[portfolios['Portfolio'] == 'C']
 
 #portfolio_A.to_csv('output.csv', index=False, encoding='utf-8-sig') # DEBUGGER
 
+ewCovar(prices, 0.94)
+
 returns = (return_calculate(prices, method="DISCRETE", date_column = "Date"))
 
-px_list = prices.tail(n=1).values
 port_value = 0
+port_value_A = 0
+port_value_B = 0
+port_value_C = 0
 
 port_list = [portfolio_A, portfolio_B, portfolio_C]
 
+for row in range(len(portfolio_A['index'])):
+    holding_value = portfolio_A.iloc[row, 2] * portfolio_A.iloc[row, 4]
+    portfolio_A.at[row, 'holding_value'] = holding_value
+    port_value_A += holding_value
+
+print(portfolio_A)
+# for row in range(len(portfolio_A['index'])):
+
+
+
+for row in range(len(portfolio_B['index'])):
+    port_value_B = port_value_B + portfolio_B.iloc[row, 2]* portfolio_B.iloc[row, 4]
+
+for row in range(len(portfolio_C['index'])):
+    port_value_C = port_value_C + portfolio_C.iloc[row, 2]* portfolio_C.iloc[row, 4]
+
+
+# Total Portfolio Value
 for port in port_list:
     for row in range(len(port['index'])):
         port_value = port_value + port.iloc[row, 2]* port.iloc[row, 4]
 
 print(port_value)
+
+
+
+
+
+
+# Monte Carlo method
