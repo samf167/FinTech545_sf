@@ -90,6 +90,7 @@ for row in range(len(portfolio_A['index'])):
 print(portfolio_A)
 # for row in range(len(portfolio_A['index'])):
 
+# Use DPazz work for delta normal then same for monte carlo
 
 
 for row in range(len(portfolio_B['index'])):
