@@ -7,3 +7,13 @@
 
 All code should run with the following packages installed:
 
+import pandas as pd
+import numpy as np
+from scipy.stats import norm
+import scipy
+import statsmodels.api as sm
+import warnings
+
+Edit filepaths as necessary
+
+
