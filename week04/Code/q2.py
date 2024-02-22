@@ -3,6 +3,7 @@ import numpy as np
 from scipy.stats import norm
 import scipy
 import statsmodels.api as sm
+from statsmodels.tsa.ar_model import AutoReg
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -96,15 +97,26 @@ VaR_mle_t = (-alpha_return*sdev)*meta_px # calc VaR
 print("MLE T VaR:", VaR_mle_t)
 
 # AR(1) model
-ar_1 = sm.tsa.SARIMAX(meta_returns['META'], order = (1,0,0),seasonal_order = (0,0,0,0),trend='c')
-result_ari = ar_1.fit()
 
+n_bootstraps = 100  # number of bootstrap samples
+lags = 1  
+
+bootstrap_estimates = np.zeros((n_bootstraps, lags + 1))
 forecasts = []
 
-forecast = (result_ari.predict(start=len(returns), end=(len(returns) +1000), dynamic=True))*meta_px
-print(forecast)
-
-VaR_ar = -np.percentile(forecast, 5)
+for i in range(n_bootstraps):
+    # Sample with replacement to create a synthetic dataset
+    sample = meta_returns['META'].sample(n=len(meta_returns), replace=True)
+    
+    # Fit an AR(1) model to the synthetic dataset
+    model = AutoReg(sample, lags=lags)
+    model_fitted = model.fit()
+    
+    # Append the forecast to the forecasts list
+    forecast_value = model_fitted.predict(start=len(sample), end=len(sample)).iloc[0]
+    forecasts.append(forecast_value)
+    
+VaR_ar = -np.percentile(forecasts, 5)*meta_px
 
 print("AR(1) VaR:", VaR_ar)
 
@@ -113,7 +125,7 @@ print("AR(1) VaR:", VaR_ar)
 samples_list = [] # initialize sample list
 
 # Bootstrap 10000 values from the historical returns to approx distribution
-for i in range(100):
+for i in range(n_bootstraps):
     new_samples = meta_returns['META'].sample(n=100, replace=True) 
     samples_list.append(new_samples)
 
