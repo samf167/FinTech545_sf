@@ -97,26 +97,23 @@ VaR_mle_t = (-alpha_return*sdev)*meta_px # calc VaR
 print("MLE T VaR:", VaR_mle_t)
 
 # AR(1) model
-
-n_bootstraps = 100  # number of bootstrap samples
 lags = 1  
-
-bootstrap_estimates = np.zeros((n_bootstraps, lags + 1))
 forecasts = []
 
-for i in range(n_bootstraps):
-    # Sample with replacement to create a synthetic dataset
-    sample = meta_returns['META'].sample(n=len(meta_returns), replace=True)
-    
-    # Fit an AR(1) model to the synthetic dataset
-    model = AutoReg(sample, lags=lags)
-    model_fitted = model.fit()
-    
-    # Append the forecast to the forecasts list
-    forecast_value = model_fitted.predict(start=len(sample), end=len(sample)).iloc[0]
-    forecasts.append(forecast_value)
-    
-VaR_ar = -np.percentile(forecasts, 5)*meta_px
+# Sample with replacement to create a synthetic dataset
+sample = meta_returns['META'].sample(n=len(meta_returns), replace=True)
+
+# Fit an AR(1) model to the synthetic dataset
+model = AutoReg(sample, lags=lags)
+model_fitted = model.fit()
+
+# Calculate the standard deviation of residuals (as an estimate of forecast std deviation)
+residuals_std = model_fitted.resid.std()
+
+quantile = norm.ppf(alpha)
+
+# Calculate VaR
+VaR_ar = -((quantile * residuals_std))*meta_px
 
 print("AR(1) VaR:", VaR_ar)
 
@@ -125,7 +122,7 @@ print("AR(1) VaR:", VaR_ar)
 samples_list = [] # initialize sample list
 
 # Bootstrap 10000 values from the historical returns to approx distribution
-for i in range(n_bootstraps):
+for i in range(10000):
     new_samples = meta_returns['META'].sample(n=100, replace=True) 
     samples_list.append(new_samples)
 
