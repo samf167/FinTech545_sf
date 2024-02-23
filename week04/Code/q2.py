@@ -83,7 +83,7 @@ def ewCovar(X, lam):
     
     return cov_matrix
 
-meta_idx = returns.columns.get_loc('AAPL')-1 
+meta_idx = returns.columns.get_loc('META')-1
 cov_matrix = ewCovar(returns, 0.94) # get cov matrix with function
 meta_ewVar = cov_matrix[meta_idx,meta_idx] # get meta var
 ew_sdev = meta_ewVar**0.5
