@@ -230,7 +230,7 @@ for row in range(len(portfolios['index'])):
 
 # Calculate Delta
 for row in range(len(portfolios['index'])):
-    delta = portfolios.iloc[row, 5]/port_value_A
+    delta = portfolios.iloc[row, 5]/port_value
     portfolios.loc[row, 'delta'] = delta
 
 # Check our delta makes sense
