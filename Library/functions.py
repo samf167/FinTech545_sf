@@ -226,6 +226,8 @@ def arithmetic_calculate(prices, date_column="date"):
 
     return returns_df
 
+
+# 6.2 Calc log returns
 def log_calculate(prices, date_column="date"):
     if date_column not in prices.columns:
         raise ValueError(f"dateColumn: {date_column} not in DataFrame: {prices.columns}")
@@ -249,7 +251,6 @@ def log_calculate(prices, date_column="date"):
 
     return returns_df
 
-
 # 7.1 Fit normal
 def fit_norm(X):
     return(scipy.stats.norm.fit(X))
@@ -257,3 +258,83 @@ def fit_norm(X):
 # 7.2 Fit T Dist
 def fit_log(X):
     return(scipy.stats.t.fit(X))
+
+# 8.1 Var from normal
+def norm_var(X, alpha):
+    sdev = X.std() # get stdev for sample set
+    z_score = norm.ppf(alpha) # get inv cdf value
+    VaR_norm = -((z_score * sdev)) - X.mean() # get VaR absolute
+    return VaR_norm
+
+# 8.2 Var from T
+def t_var(X, alpha):
+    params = scipy.stats.t.fit(X, method='MLE') # Fit T distribution
+    alpha_return = scipy.stats.t.ppf(alpha, params[0], loc = params[1], scale =params[2]) # Save Df
+    VaR_mle_t = (-alpha_return) # calc VaR
+    return VaR_mle_t
+
+# 8.3 VaR from Simulation
+def hist_var(X, alpha, n):
+    samples_list = [] # initialize sample list
+
+    for i in range(n):
+        new_samples = X.sample(n=10, replace=True) 
+        samples_list.append(new_samples)
+
+        sample_draws = pd.concat(samples_list, ignore_index=True)
+
+        # Get alpha percentile for VaR
+        VaR_historic = -np.percentile(sample_draws, alpha*100)
+
+    return VaR_historic
+
+# 8.4 ES from Norm
+def ES_norm(X, alpha):
+    mu, sdev = scipy.stats.norm.fit(X)
+    z_score = norm.ppf(alpha) # get inv cdf value
+    VaR_norm = -((z_score * sdev)) # get VaR
+
+    phi_inv_alpha = norm.ppf(alpha)
+    
+    f_phi_inv_alpha = norm.pdf(phi_inv_alpha)
+    
+    ES = -mu + sdev * (f_phi_inv_alpha / alpha)
+    return ES
+
+# 8.5 ES from T 
+def ES_t(X, alpha):
+    params = scipy.stats.t.fit(X, method='MLE') # Fit T distribution
+    alpha_return = scipy.stats.t.ppf(alpha, params[0], loc = params[1], scale =params[2]) # Save Df
+    VaR_mle_t = (-alpha_return) # calc VaR
+    integral, error = quad(lambda x: x * t.pdf(x, params[0], loc = params[1], scale =params[2]), -np.inf, -VaR_mle_t)
+    # Calculate ES
+    ES = -1/alpha * integral
+
+    return ES
+
+# 8.6 ES from Simulation
+def ES_hist(X, alpha, n):
+    samples_list = [] # initialize sample list
+
+    # Bootstrap 10000 values from the historical x_df to approx distribution
+    for i in range(n):
+        new_samples = X.sample(n=10, replace=True) 
+        samples_list.append(new_samples)
+
+    sample_draws = pd.concat(samples_list, ignore_index=True)
+
+    # Get alpha percentile for VaR
+    VaR_historic = -np.percentile(sample_draws, alpha*100)
+
+    # Calculate Es by brute force
+    total = 0
+    count = 0
+    val = 0
+    for i in range(n*(10)):
+        val = sample_draws.loc[i, 'x1']
+        if val < -VaR_historic:
+            count+=1
+            total= total + val
+
+    ES_historic = -total/count
+    return ES_historic
