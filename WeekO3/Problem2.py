@@ -29,6 +29,8 @@ def chol_psd(root, a):
             for i in range(j + 1, n):
                 s = np.dot(root[i, :j], root[j, :j])
                 root[i, j] = (a[i, j] - s) * ir
+    
+    return s
 
 def near_psd(a, epsilon=0.0):
     n = a.shape[0]

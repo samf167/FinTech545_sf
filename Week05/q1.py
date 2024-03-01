@@ -19,7 +19,7 @@ alpha = 0.05 # set alpha
 z_score = norm.ppf(alpha) # get inv cdf value
 sdev = x_df['x'].std() # get stdev for sample set
 column_mean = x_df['x'].mean()
-#column_mean = 0
+column_mean = 0
 
 def ES(mu, sigma, alpha):
     phi_inv_alpha = norm.ppf(alpha)
@@ -63,6 +63,7 @@ print("Normal ES (EWV):", ES(column_mean, ew_sdev, alpha))
 # ---------------------------------------------
 # MLE Fitted T
 params = scipy.stats.t.fit(x_df, method='MLE') # Fit T distribution
+print(params)
 alpha_return = scipy.stats.t.ppf(alpha, params[0], loc = params[1], scale =params[2]) # Save Df
 VaR_mle_t = (-alpha_return) # calc VaR
 print("T VaR:", VaR_mle_t)
