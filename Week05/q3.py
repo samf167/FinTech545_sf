@@ -149,10 +149,10 @@ for col in returns_C.columns:
 
 uniform_returns_df = pd.DataFrame(uniform_returns)
 standard_normal_returns_df = pd.DataFrame(standard_normal_returns)
+
 spear = scipy.stats.spearmanr(standard_normal_returns_df)
 mean = np.zeros(len(spear))
 cov = spear[0]
-
 
 mean_vector = np.zeros(len(cov))  # Assuming a mean vector of zeros for simplicity
 simulated_normals = np.random.multivariate_normal(mean_vector, cov, size=n)
@@ -165,7 +165,7 @@ simulatedReturnsData = {}
 
 for col in returns_C.columns:
     std_dev_return = returns_C[col].std()
-    simulatedReturnsData[col] = np.random.normal(loc=0, scale=std_dev_return, size=len(simU-1))
+    simulatedReturnsData[col] = np.random.normal(loc=0, scale=std_dev_return, size=len(simU))
 
 # Convert the simulated returns data into a DataFrame
 for returns_df in [returns_A, returns_B]:
@@ -173,31 +173,17 @@ for returns_df in [returns_A, returns_B]:
         simulatedReturnsData[col] = t.ppf(simU[col], df)
 
 simulatedReturns = pd.DataFrame(simulatedReturnsData)
-print(simulatedReturns)
-
-'''
-        alpha_return = scipy.stats.t.ppf(alpha, params[0], loc = params[1], scale =params[2]) # Save Df
-        VaR_mle_t = (-alpha_return) # calc VaR
-        #print(col, "T VaR:", VaR_mle_t)
-
-        integral, error = quad(lambda x: x * t.pdf(x, params[0], loc = params[1], scale =params[2]), -np.inf, -VaR_mle_t)
-
-        # Calculate ES
-        ES = -1/alpha * integral
-
-        #print(col, "T ES:", ES)
-        portfolio_A.at[row, 'holding_return'] = portfolio_A['holding_value']*(1-return_sim)
-'''
+#print(simulatedReturns)
 
 # complete with model fitting
 # Create a DataFrame for iterations
-iterations = pd.DataFrame({'iteration': range(1, n + 1)})
+iterations = pd.DataFrame({'iteration': range(1, n)})
 
 # Perform a cross join between Portfolio and iterations
 values = pd.merge(portfolios.assign(key=1), iterations.assign(key=1), on='key').drop('key', axis=1)
 # Calculate current value, simulated value, and PnL
 values['currentValue'] = values['Holding'] * values[248]
-print(values)
+#print(values)
 values['simulatedValue'] = values.apply(lambda x: x['currentValue'] * (1.0 + simulatedReturns.loc[x['iteration'], x['Stock']]), axis=1)
 values['pnl'] = values['simulatedValue'] - values['currentValue']
 print(values)
