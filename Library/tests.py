@@ -270,7 +270,11 @@ A_out = fn.arithmetic_calculate(A, "Date")
 A_out = pd.DataFrame(A_out)
 A_out.to_latex('6.1_out.txt', index=False)
 B.to_latex('6.1_expected.txt', index=False)
+A_out = A_out.set_index('Date').reset_index(drop=True)
+B = B.set_index('Date').reset_index(drop=True)
 print('6.1')
+print("Realized Norm:", np.linalg.norm(A_out))
+print("Expected Norm:", np.linalg.norm(B))
 print("\n")
 
 # 6.2
@@ -282,6 +286,10 @@ A_out = fn.log_calculate(A, "Date")
 A_out = pd.DataFrame(A_out)
 A_out.to_latex('6.2_out.txt', index=False)
 B.to_latex('6.2_expected.txt', index=False)
+A_out = A_out.set_index('Date').reset_index(drop=True)
+B = B.set_index('Date').reset_index(drop=True)
+print("Realized Norm:", np.linalg.norm(A_out))
+print("Expected Norm:", np.linalg.norm(B))
 print("\n")
 
 alpha = 0.05
@@ -401,7 +409,6 @@ print("\n")
 
 # 9.1
 
-
 # Import data
 a = '/Users/samfuller/Desktop/545/FinTech545_sf-2/Library/test9_1_portfolio.csv'
 b = '/Users/samfuller/Desktop/545/FinTech545_sf-2/Library/test9_1_returns.csv'
@@ -412,8 +419,8 @@ returns_A = returns['A']
 returns_B = returns['B']
 
 # Get most recent market prices and merge them into the portfolio dataframe
-final_row_df = portfolios[['Stock', 'Starting Price']].T
-final_row_df.reset_index(level=0, inplace=True)
+final_row_df = portfolios[['Stock', 'Starting Price','Holding']]
+final_row_df.reset_index(level=0, inplace=False)
 
 
 # Initialize Values
@@ -426,9 +433,6 @@ n = 5000
 #span_value = 10000000000 # lambda = 0
 
 # --------------------------------------------------------------------------
-
-
-
 portfolio_return = 0
 
 fittedModels = pd.DataFrame()
@@ -451,24 +455,30 @@ standard_normal_returns['A'] = scipy.stats.norm.ppf(uniform_returns['A'])
 
 uniform_returns_df = pd.DataFrame(uniform_returns)
 standard_normal_returns_df = pd.DataFrame(standard_normal_returns)
-spear = scipy.stats.spearmanr(standard_normal_returns_df)
-print(spear)
+spearman_correlation, p_value = scipy.stats.spearmanr(standard_normal_returns_df, axis=0)
+
+# If you specifically want a correlation matrix as output
+correlation_matrix = pd.DataFrame(np.ones((2, 2)),
+                                index=standard_normal_returns_df.columns, 
+                                columns=standard_normal_returns_df.columns)
+correlation_matrix.iloc[0, 1] = spearman_correlation
+correlation_matrix.iloc[1, 0] = spearman_correlation
+
+cov = correlation_matrix
 mean = 0
-cov = spear[0]
-mean_vector = [0]  # Assuming a mean vector of zeros for simplicity
+mean_vector = [0,0]  # Assuming a mean vector of zeros for simplicity
 simulated_normals = np.random.multivariate_normal(mean_vector, cov, size=n)
 
-simU = pd.DataFrame(norm.cdf(simulated_normals), columns=final_row_df.columns)
+simU = pd.DataFrame(norm.cdf(simulated_normals), columns=returns.columns)
 
-# Evaluate the fitted model for 'SPY' to get the simulated returns
-# Assuming fittedModels['SPY'].eval takes the uniform variables and returns simulated returns
+
 simulatedReturnsData = {}
 
-std_dev_return = returns['B'].std()
-simulatedReturnsData['B'] = norm.ppf(simU['B'], loc=0, scale=std_dev_return)
+std_dev_return = returns['A'].std()
+simulatedReturnsData['A'] = norm.ppf(simU['A'], loc=0, scale=std_dev_return)
 
 # Convert the simulated returns data into a DataFrame
-simulatedReturnsData['A'] = t.ppf(simU['A'], deg_free['A'],loc=0 , scale=scale_t['A'])
+simulatedReturnsData['B'] = t.ppf(simU['B'], deg_free['B'],loc=0 , scale=scale_t['B'])
 
 simulatedReturns = pd.DataFrame(simulatedReturnsData)
 #print(simulatedReturns)
@@ -511,3 +521,4 @@ for i in range(n-1):
 
 ES_historic = -total/count
 print("Total Portfolio ES:", ES_historic)
+

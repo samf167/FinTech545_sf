@@ -10,8 +10,10 @@ from scipy.integrate import quad
 import warnings
 from sklearn.decomposition import PCA
 from scipy.optimize import minimize
-
-# --------------------------Missing Data--------------------------------#
+import numpy as np
+from numpy.linalg import eigh
+from scipy.linalg import eigh as scipy_eigh
+import random
 
 # 1.1 Cov missing
 def covariance_skip_missing(dataframe):
@@ -30,8 +32,6 @@ def covariance_pairwise(dataframe):
 # 1.4 Corr missing (pairwise)
 def correlation_pairwise(dataframe):
     return dataframe.corr(min_periods=1)
-
-# -------------------------Cov/Corr Calcs--------------------------------#
 
 # 2.1 EW Covariance
 def ewCovar(X, lam):
@@ -84,7 +84,6 @@ def ewCorrelation(X, lam):
     
     return corr_matrix
 
-
 # 3.1 Near covar
 def near_psd(a, epsilon=0.0):
     n = a.shape[0]
@@ -111,7 +110,6 @@ def near_psd(a, epsilon=0.0):
         out = invSD @ out @ invSD
 
     return out
-
 
 # 3.3
 def _getAplus(A):
@@ -156,7 +154,6 @@ def higham_nearest_psd(pc, W=None, epsilon=1e-9, maxIter=100, tol=1e-9):
 
     return Yk
 
-
 # 4.1 Cholesky psd
 def chol_psd(root, a):
     n = a.shape[0]
@@ -188,11 +185,6 @@ def chol_psd(root, a):
     return root
 
 # 5.5 PCA
-import numpy as np
-from numpy.linalg import eigh
-from scipy.linalg import eigh as scipy_eigh
-import random
-
 def simulate_pca(a, nsim, pctExp=1, mean=None, seed=1234):
     n = a.shape[0]
 
@@ -232,8 +224,6 @@ def simulate_pca(a, nsim, pctExp=1, mean=None, seed=1234):
     for i in range(n):
         out[:, i] = out[:, i] + _mean[i]
     return out
-
-
 
 # 6.1 Calc arithmetic returns
 def arithmetic_calculate(prices, date_column="date"):
@@ -317,7 +307,6 @@ def fit_regression_t(y, x):
     mu, s, nu, betas = result.x[0], result.x[1], result.x[2], result.x[3:]
 
     return {"mu" : mu, "s" : s, "nu": nu, "betas":betas}
-
 
 # 8.1 Var from normal
 def norm_var(X, alpha):
