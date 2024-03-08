@@ -1,0 +1,16 @@
+\begin{tabular}{rrrrr}
+\toprule
+x1 & x2 & x3 & x4 & x5 \\
+\midrule
+NaN & NaN & NaN & NaN & NaN \\
+NaN & NaN & NaN & NaN & NaN \\
+NaN & NaN & NaN & NaN & NaN \\
+NaN & NaN & NaN & NaN & NaN \\
+NaN & NaN & NaN & NaN & NaN \\
+NaN & NaN & NaN & NaN & NaN \\
+NaN & NaN & NaN & NaN & NaN \\
+NaN & NaN & NaN & NaN & NaN \\
+NaN & NaN & NaN & NaN & NaN \\
+NaN & NaN & NaN & NaN & NaN \\
+\bottomrule
+\end{tabular}

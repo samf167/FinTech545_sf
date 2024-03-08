@@ -1,0 +1,7 @@
+\begin{tabular}{rrrrrrr}
+\toprule
+mu & sigma & nu & Alpha & B1 & B2 & B3 \\
+\midrule
+0.000000 & 0.048548 & 4.598293 & 0.042634 & 0.974889 & 2.041192 & 3.154801 \\
+\bottomrule
+\end{tabular}

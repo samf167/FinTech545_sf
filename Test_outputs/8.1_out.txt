@@ -1,0 +1,7 @@
+\begin{tabular}{r}
+\toprule
+0 \\
+\midrule
+0.030920 \\
+\bottomrule
+\end{tabular}

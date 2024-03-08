@@ -55,7 +55,7 @@ def ewCovar(X, lam):
 cov_matrix = ewCovar(x_df, 0.97) # get cov matrix with function
 ew_Var = cov_matrix[0]
 ew_sdev = ew_Var**0.5
-VaR_norm_ewV = -(z_score * ew_sdev + column_mean) # get VaR
+VaR_norm_ewV = -(z_score * ew_sdev + column_mean) # get VaR and make it absolute by subtracting mean
 
 print("Normal VaR (EWV):", VaR_norm_ewV)
 print("Normal ES (EWV):", ES(column_mean, ew_sdev, alpha))
@@ -68,9 +68,10 @@ alpha_return = scipy.stats.t.ppf(alpha, params[0], loc = params[1], scale =param
 VaR_mle_t = (-alpha_return) # calc VaR
 print("T VaR:", VaR_mle_t)
 
+# Calculate ES via the integral definition
 integral, error = quad(lambda x: x * t.pdf(x, params[0], loc = params[1], scale =params[2]), -np.inf, -VaR_mle_t)
 
-# Calculate ES
+# Finish ES calculation
 ES = -1/alpha * integral
 
 print("T ES:", ES)

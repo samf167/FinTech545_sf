@@ -8,38 +8,33 @@ import statsmodels.api as sm
 from statsmodels.tsa.ar_model import AutoReg
 from scipy.integrate import quad
 import warnings
+from sklearn.decomposition import PCA
+from scipy.optimize import minimize
 
 # --------------------------Missing Data--------------------------------#
 
 # 1.1 Cov missing
 def covariance_skip_missing(dataframe):
-    # Drop rows with any missing values
     clean_df = dataframe.dropna()
-    # Calculate covariance matrix
     return clean_df.cov()
 
 # 1.2 Corr missing
 def correlation_skip_missing(dataframe):
-    # Drop rows with any missing values
     clean_df = dataframe.dropna()
-    # Calculate correlation matrix
     return clean_df.corr()
 
 # 1.3 Cov missing (pairwise) 
 def covariance_pairwise(dataframe):
-    # Calculate covariance matrix with pairwise deletion
     return dataframe.cov(min_periods=1)
 
 # 1.4 Corr missing (pairwise)
 def correlation_pairwise(dataframe):
-    # Calculate correlation matrix with pairwise deletion
     return dataframe.corr(min_periods=1)
 
 # -------------------------Cov/Corr Calcs--------------------------------#
 
 # 2.1 EW Covariance
 def ewCovar(X, lam):
-    X.set_index(X.columns[0], inplace=True)
     m, n = X.shape
     w = np.empty(m)
     
@@ -62,7 +57,6 @@ def ewCovar(X, lam):
 
 # 2.2 EW Correlation
 def ewCorrelation(X, lam):
-    X.set_index(X.columns[0], inplace=True)
     m, n = X.shape
     w = np.empty(m)
     
@@ -90,7 +84,6 @@ def ewCorrelation(X, lam):
     
     return corr_matrix
 
-# 2.3 
 
 # 3.1 Near covar
 def near_psd(a, epsilon=0.0):
@@ -120,55 +113,49 @@ def near_psd(a, epsilon=0.0):
     return out
 
 
-# 2.Higham
+# 3.3
 def _getAplus(A):
     eigvals, eigvecs = np.linalg.eigh(A)
-    eigvals = np.maximum(eigvals, 0)
+    eigvals[eigvals < 0] = 0
     return eigvecs @ np.diag(eigvals) @ eigvecs.T
 
-def _getPs(A, W=None):
-    if W is None:
-        W = np.eye(len(A))
+def _getPS(A, W):
     W05 = np.sqrt(W)
     iW = np.linalg.inv(W05)
     return iW @ _getAplus(W05 @ A @ W05) @ iW
 
-def _getPu(A, W=None):
-    Aret = A.copy()
-    np.fill_diagonal(Aret, 1)
-    return Aret
-
-def wgtNorm(A, W=None):
-    if W is None:
-        W = np.eye(len(A))
+def wgtNorm(A, W):
     W05 = np.sqrt(W)
-    W05 = W05 @ A @ W05
-    return np.sum(W05 * W05)
+    return np.sum((W05 @ A @ W05)**2)
 
-def higham_nearest_psd(pc, W=None, epsilon=1e-9, max_iter=100, tol=1e-9):
+def higham_nearest_psd(pc, W=None, epsilon=1e-9, maxIter=100, tol=1e-9):
     n = pc.shape[0]
     if W is None:
-        W = np.eye(n)
-    
-    delta_s = 0
-    Yk = pc.copy()
-    norml = np.finfo(np.float64).max
+        W = np.diag(np.ones(n))
+
+    Yk = np.copy(pc)
+    norml = np.inf
     i = 1
-    
-    while i <= max_iter:
-        Rk = Yk - delta_s
-        Xk = _getPs(Rk, W)
-        delta_s = Xk - Rk
-        Yk = _getPu(Xk, W)
+
+    while i <= maxIter:
+        Rk = Yk
+        # Ps Update
+        Xk = _getPS(Rk, W)
+        # Get Norm
         norm = wgtNorm(Yk - pc, W)
-        min_eig_val = np.min(np.real(np.linalg.eigvals(Yk)))
-        
-        if abs(norm - norml) < tol and min_eig_val > -epsilon:
+        # Smallest Eigenvalue
+        minEigVal = np.min(np.linalg.eigvalsh(Yk))
+
+        if abs(norm - norml) < tol and minEigVal > -epsilon:
+            # Norm converged and matrix is at least PSD
             break
-        
+
         norml = norm
+        Yk = Xk
         i += 1
+
     return Yk
+
 
 # 4.1 Cholesky psd
 def chol_psd(root, a):
@@ -198,11 +185,57 @@ def chol_psd(root, a):
             for i in range(j + 1, n):
                 s = np.dot(root[i, :j], root[j, :j])
                 root[i, j] = (a[i, j] - s) * ir
-    return s
+    return root
+
+# 5.5 PCA
+import numpy as np
+from numpy.linalg import eigh
+from scipy.linalg import eigh as scipy_eigh
+import random
+
+def simulate_pca(a, nsim, pctExp=1, mean=None, seed=1234):
+    n = a.shape[0]
+
+    if mean is None:
+        _mean = np.zeros(n)
+    else:
+        _mean = mean.copy()
+
+    vals, vecs = scipy_eigh(a)
+    
+    vals = vals[::-1]
+    vecs = vecs[:, ::-1]
+    
+    tv = np.sum(vals)
+
+    posv = np.where(vals >= 1e-8)[0]
+    if pctExp < 1:
+        nval = 0
+        pct = 0.0
+        for i in range(len(posv)):
+            pct += vals[i] / tv
+            nval += 1
+            if pct >= pctExp:
+                break
+        if nval < len(posv):
+            posv = posv[:nval]
+    vals = vals[posv]
+    vecs = vecs[:, posv]
+
+    B = vecs @ np.diag(np.sqrt(vals))
+
+    np.random.seed(seed)
+    m = len(vals)
+    r = np.random.randn(m, nsim)
+
+    out = (B @ r).T
+    for i in range(n):
+        out[:, i] = out[:, i] + _mean[i]
+    return out
+
 
 
 # 6.1 Calc arithmetic returns
-
 def arithmetic_calculate(prices, date_column="date"):
     if date_column not in prices.columns:
         raise ValueError(f"dateColumn: {date_column} not in DataFrame: {prices.columns}")
@@ -225,7 +258,6 @@ def arithmetic_calculate(prices, date_column="date"):
     returns_df = returns_df[cols]
 
     return returns_df
-
 
 # 6.2 Calc log returns
 def log_calculate(prices, date_column="date"):
@@ -256,8 +288,36 @@ def fit_norm(X):
     return(scipy.stats.norm.fit(X))
 
 # 7.2 Fit T Dist
-def fit_log(X):
+def fit_t(X):
     return(scipy.stats.t.fit(X))
+
+# 7.3 Fit T Regression
+def fit_regression_t(y, x):
+    n = x.shape[0]
+    x = np.hstack((np.ones((n, 1)), x)) 
+    nB = x.shape[1]
+    
+    b_start = np.linalg.inv(x.T @ x) @ x.T @ y
+    residuals = y - x @ b_start
+    start_mu = np.mean(residuals)
+    start_s = np.std(residuals)
+    start_nu = 6.0/scipy.stats.kurtosis(residuals) + 4
+
+    def negative_log_likelihood(params):
+        mu, s, nu, B = params[0], max(params[1], 1e-6), max(params[2], 2.00001), params[3:]
+        errors = y - x @ B
+        log_likelihood = np.sum(t.logpdf(errors, df=nu, loc=mu, scale=s))
+        return -log_likelihood
+    
+    initial_params = np.concatenate(([start_mu, start_s, start_nu], b_start))
+    
+    result = minimize(negative_log_likelihood, initial_params, method='L-BFGS-B')
+    print(result)
+    
+    mu, s, nu, betas = result.x[0], result.x[1], result.x[2], result.x[3:]
+
+    return {"mu" : mu, "s" : s, "nu": nu, "betas":betas}
+
 
 # 8.1 Var from normal
 def norm_var(X, alpha):
@@ -338,3 +398,4 @@ def ES_hist(X, alpha, n):
 
     ES_historic = -total/count
     return ES_historic
+

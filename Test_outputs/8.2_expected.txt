@@ -1,0 +1,7 @@
+\begin{tabular}{rr}
+\toprule
+VaR Absolute & VaR Diff from Mean \\
+\midrule
+0.041530 & 0.087470 \\
+\bottomrule
+\end{tabular}

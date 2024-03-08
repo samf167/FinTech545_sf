@@ -136,8 +136,6 @@ simulated_normals = np.random.multivariate_normal(mean_vector, cov, size=n)
 
 simU = pd.DataFrame(norm.cdf(simulated_normals), columns=port_B_stocks)
 
-# Evaluate the fitted model for 'SPY' to get the simulated returns
-# Assuming fittedModels['SPY'].eval takes the uniform variables and returns simulated returns
 simulatedReturnsData = {}
 
 # Convert the simulated returns data into a DataFrame
