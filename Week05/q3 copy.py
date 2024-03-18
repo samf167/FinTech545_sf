@@ -13,7 +13,9 @@ warnings.filterwarnings('ignore')
 
 # Import data
 filepath_1 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/week05/DailyPrices.csv'
+filepath_1 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/Week04/Data/DailyPrices.csv'
 filepath_2 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/week05/portfolio.csv'
+filepath_2 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/week04/Data/portfolio.csv'
 
 prices = pd.read_csv(filepath_1)
 portfolios = pd.read_csv(filepath_2)
@@ -54,29 +56,6 @@ def return_calculate(prices, method="DISCRETE", date_column="date"):
 
     return returns_df
 
-# EWC function
-def ewCovar(X, lam):
-    X.set_index(X.columns[0], inplace=True)
-    m, n = X.shape
-    w = np.empty(m)
-    
-    # Remove the mean from the series
-    X_mean = np.mean(X, axis=0)
-    X = X - X_mean
-    
-    # Calculate weight. Realize we are going from oldest to newest
-    for i in range(m):
-        w[i] = (1 - lam) * lam**(m - i - 1)
-    
-    # Normalize weights to 1
-    w /= np.sum(w)
-    
-    # Covariance calculation
-    weighted_X = (w[:, np.newaxis] * X)  # Elementwise multiplication
-    cov_matrix = np.dot(weighted_X.T, X)
-    
-    return cov_matrix
-
 # Seperate seperate portfolios
 portfolio_A = portfolios[portfolios['Portfolio'] == 'A']
 
@@ -100,14 +79,25 @@ port_value_B = 0
 port_value_C = 0
 span_value = 32.22 # lambda = 0.94
 alpha = 0.05
-n = 1000
+n = 5000
 #span_value = 10000000000 # lambda = 0
 
-# Portfolio B
+# --------------------------------------------------------------------------
 
 # Create returns dists for all portfolios
+port_A_stocks = portfolio_A['index'].tolist()
+returns_A = returns.loc[:, returns.columns.isin(port_A_stocks)]
+nma = returns_A.columns
+
+port_B_stocks = portfolio_B['index'].tolist()
+returns_B = returns.loc[:, returns.columns.isin(port_B_stocks)]
+
 port_C_stocks = portfolio_C['index'].tolist()
 returns_C = returns.loc[:, returns.columns.isin(port_C_stocks)]
+
+port_ttl_stocks = portfolios['index'].tolist()
+returns_ttl = returns.loc[:, returns.columns.isin(port_ttl_stocks)]
+nms = returns_ttl.columns
 
 portfolio_return = 0
 
@@ -119,9 +109,14 @@ deg_free = {}
 loc_t = {}
 scale_t = {}
 
-# Process returns for portfolio A and B (T-distributed)
+# Process returns for portfolio A and B (T-distributed) and transform to uniform then standard normal
+for returns_df in [returns_A, returns_B]:
+    for col in returns_df.columns:
+        deg_free[col], loc_t[col], scale_t[col] = scipy.stats.t.fit(returns_df[col], floc=0)
+        uniform_returns[col] = scipy.stats.t.cdf(returns_df[col], deg_free[col], loc=0, scale=scale_t[col])
+        standard_normal_returns[col] = scipy.stats.norm.ppf(uniform_returns[col])
 
-# Process returns for portfolio C (Normally-distributed)
+# Process returns for portfolio C (Normally-distributed) and transform to uniform then standard normal
 for col in returns_C.columns:
     scale = returns_C[col].std()
     uniform_returns[col] = scipy.stats.norm.cdf(returns_C[col], loc=0, scale=scale)
@@ -130,22 +125,29 @@ for col in returns_C.columns:
 uniform_returns_df = pd.DataFrame(uniform_returns)
 standard_normal_returns_df = pd.DataFrame(standard_normal_returns)
 
+# calcualte spearman correlation matrix of standard normal df
 spear = scipy.stats.spearmanr(standard_normal_returns_df)
 mean = np.zeros(len(spear))
 cov = spear[0]
 
 mean_vector = np.zeros(len(cov))  # Assuming a mean vector of zeros for simplicity
+
+# simulate from the multivariate normla distribution using previous correaltion matrix
 simulated_normals = np.random.multivariate_normal(mean_vector, cov, size=n)
 
-simU = pd.DataFrame(norm.cdf(simulated_normals), columns=port_C_stocks)
+simU = pd.DataFrame(norm.cdf(simulated_normals), columns=nms)
 
 simulatedReturnsData = {}
 
+# Transform back to uniform and then back to returns for both T and normally distributed variables
 for col in returns_C.columns:
     std_dev_return = returns_C[col].std()
     simulatedReturnsData[col] = norm.ppf(simU[col], loc=0, scale=std_dev_return)
 
-# Convert the simulated returns data into a DataFrame
+for returns_df in [returns_A, returns_B]:
+    for col in returns_df.columns:
+        simulatedReturnsData[col] = t.ppf(simU[col], deg_free[col],loc=0 , scale=scale_t[col])
+
 simulatedReturns = pd.DataFrame(simulatedReturnsData)
 #print(simulatedReturns)
 
@@ -154,14 +156,15 @@ simulatedReturns = pd.DataFrame(simulatedReturnsData)
 iterations = pd.DataFrame({'iteration': range(1, n)})
 
 # Perform a cross join between Portfolio and iterations
-values = pd.merge(portfolio_C.assign(key=1), iterations.assign(key=1), on='key').drop('key', axis=1)
-
-# Calculate current value, simulated value, and PnL
-values['currentValue'] = values['Holding'] * values[248]
+values = pd.merge(portfolios.assign(key=1), iterations.assign(key=1), on='key').drop('key', axis=1)
+print(values)
+# Calculate current value, simulated value, and PnL using portfolio data
+values['currentValue'] = values['Holding'] * values[265]
 values['simulatedValue'] = values.apply(lambda x: x['currentValue'] * (1.0 + simulatedReturns.loc[x['iteration'], x['Stock']]), axis=1)
 values['pnl'] = values['simulatedValue'] - values['currentValue']
 # values.to_csv('merged_values.csv', index=False)
 
+# group by iteration to get the monte carlo simulated values for pnl
 gdf = values.groupby('iteration')
 totalValues = gdf.agg({
     'currentValue': 'sum',
@@ -170,8 +173,8 @@ totalValues = gdf.agg({
 }).reset_index()
 
 print(totalValues)
-#totalValues.to_csv('merged_values.csv', index=False)
 
+# Take alpha percentile for var
 VaR_historic = -np.percentile(totalValues['pnl'], alpha*100)
 print("Total Portfolio VaR:", VaR_historic)
 

@@ -13,7 +13,9 @@ warnings.filterwarnings('ignore')
 
 # Import data
 filepath_1 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/week05/DailyPrices.csv'
+filepath_1 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/Week04/Data/DailyPrices.csv'
 filepath_2 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/week05/portfolio.csv'
+filepath_2 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/week04/Data/portfolio.csv'
 
 prices = pd.read_csv(filepath_1)
 portfolios = pd.read_csv(filepath_2)
@@ -157,7 +159,7 @@ iterations = pd.DataFrame({'iteration': range(1, n)})
 values = pd.merge(portfolio_C.assign(key=1), iterations.assign(key=1), on='key').drop('key', axis=1)
 
 # Calculate current value, simulated value, and PnL
-values['currentValue'] = values['Holding'] * values[248]
+values['currentValue'] = values['Holding'] * values[265]
 values['simulatedValue'] = values.apply(lambda x: x['currentValue'] * (1.0 + simulatedReturns.loc[x['iteration'], x['Stock']]), axis=1)
 values['pnl'] = values['simulatedValue'] - values['currentValue']
 # values.to_csv('merged_values.csv', index=False)

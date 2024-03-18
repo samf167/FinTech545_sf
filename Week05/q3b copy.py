@@ -13,7 +13,9 @@ warnings.filterwarnings('ignore')
 
 # Import data
 filepath_1 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/week05/DailyPrices.csv'
+filepath_1 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/Week04/Data/DailyPrices.csv'
 filepath_2 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/week05/portfolio.csv'
+filepath_2 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/week04/Data/portfolio.csv'
 
 prices = pd.read_csv(filepath_1)
 portfolios = pd.read_csv(filepath_2)
@@ -106,8 +108,8 @@ n = 1000
 # Portfolio B
 
 # Create returns dists for all portfolios
-port_C_stocks = portfolio_C['index'].tolist()
-returns_C = returns.loc[:, returns.columns.isin(port_C_stocks)]
+port_B_stocks = portfolio_B['index'].tolist()
+returns_B = returns.loc[:, returns.columns.isin(port_B_stocks)]
 
 portfolio_return = 0
 
@@ -121,10 +123,9 @@ scale_t = {}
 
 # Process returns for portfolio A and B (T-distributed)
 
-# Process returns for portfolio C (Normally-distributed)
-for col in returns_C.columns:
-    scale = returns_C[col].std()
-    uniform_returns[col] = scipy.stats.norm.cdf(returns_C[col], loc=0, scale=scale)
+for col in returns_B:
+    deg_free[col], loc_t[col], scale_t[col] = scipy.stats.t.fit(returns_B[col], floc=0)
+    uniform_returns[col] = scipy.stats.t.cdf(returns_B[col], deg_free[col], loc=0, scale=scale_t[col])
     standard_normal_returns[col] = scipy.stats.norm.ppf(uniform_returns[col])
 
 uniform_returns_df = pd.DataFrame(uniform_returns)
@@ -133,19 +134,17 @@ standard_normal_returns_df = pd.DataFrame(standard_normal_returns)
 spear = scipy.stats.spearmanr(standard_normal_returns_df)
 mean = np.zeros(len(spear))
 cov = spear[0]
-
 mean_vector = np.zeros(len(cov))  # Assuming a mean vector of zeros for simplicity
 simulated_normals = np.random.multivariate_normal(mean_vector, cov, size=n)
 
-simU = pd.DataFrame(norm.cdf(simulated_normals), columns=port_C_stocks)
+simU = pd.DataFrame(norm.cdf(simulated_normals), columns=port_B_stocks)
 
 simulatedReturnsData = {}
 
-for col in returns_C.columns:
-    std_dev_return = returns_C[col].std()
-    simulatedReturnsData[col] = norm.ppf(simU[col], loc=0, scale=std_dev_return)
-
 # Convert the simulated returns data into a DataFrame
+for col in returns_B:
+    simulatedReturnsData[col] = t.ppf(simU[col], deg_free[col],loc=0 , scale=scale_t[col])
+
 simulatedReturns = pd.DataFrame(simulatedReturnsData)
 #print(simulatedReturns)
 
@@ -154,10 +153,10 @@ simulatedReturns = pd.DataFrame(simulatedReturnsData)
 iterations = pd.DataFrame({'iteration': range(1, n)})
 
 # Perform a cross join between Portfolio and iterations
-values = pd.merge(portfolio_C.assign(key=1), iterations.assign(key=1), on='key').drop('key', axis=1)
+values = pd.merge(portfolio_B.assign(key=1), iterations.assign(key=1), on='key').drop('key', axis=1)
 
 # Calculate current value, simulated value, and PnL
-values['currentValue'] = values['Holding'] * values[248]
+values['currentValue'] = values['Holding'] * values[265]
 values['simulatedValue'] = values.apply(lambda x: x['currentValue'] * (1.0 + simulatedReturns.loc[x['iteration'], x['Stock']]), axis=1)
 values['pnl'] = values['simulatedValue'] - values['currentValue']
 # values.to_csv('merged_values.csv', index=False)
@@ -173,7 +172,7 @@ print(totalValues)
 #totalValues.to_csv('merged_values.csv', index=False)
 
 VaR_historic = -np.percentile(totalValues['pnl'], alpha*100)
-print("Total Portfolio VaR:", VaR_historic)
+print("VaR B:", VaR_historic)
 
 # Calculate Es 
 total = 0
@@ -186,4 +185,4 @@ for i in range(n-1):
         total= total + val
 
 ES_historic = -total/count
-print("Total Portfolio ES:", ES_historic)
+print("ES :", ES_historic)

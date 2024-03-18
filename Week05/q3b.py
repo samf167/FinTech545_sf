@@ -14,6 +14,7 @@ warnings.filterwarnings('ignore')
 # Import data
 filepath_1 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/week05/DailyPrices.csv'
 filepath_2 = '/Users/samfuller/Desktop/545/FinTech545_sf-2/week05/portfolio.csv'
+
 prices = pd.read_csv(filepath_1)
 portfolios = pd.read_csv(filepath_2)
 
